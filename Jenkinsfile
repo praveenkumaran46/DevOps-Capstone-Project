@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_IMAGE = "praveenkumaran46/nodejs-capstone"
+        DOCKER_TAG = "latest"
+    }
+
     tools {
         nodejs 'node18'
     }
@@ -26,7 +31,18 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t nodejs-app:latest .'
+                sh 'docker build -t $DOCKER_IMAGE:$DOCKER_TAG .'
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh '''
+                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                    docker push $DOCKER_IMAGE:$DOCKER_TAG
+                    '''
+                }
             }
         }
 
@@ -35,7 +51,7 @@ pipeline {
                 sh '''
                 docker stop nodejs-app || true
                 docker rm nodejs-app || true
-                docker run -d -p 3000:3000 --name nodejs-app nodejs-app:latest
+                docker run -d -p 80:3000 --name nodejs-app $DOCKER_IMAGE:$DOCKER_TAG
                 '''
             }
         }
