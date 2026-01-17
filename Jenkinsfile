@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "<YOUR_DOCKER_USERNAME>/nodejs-capstone"
+        DOCKER_IMAGE = "praveenvijay4698/nodejs-capstone"
         DOCKER_TAG = "latest"
     }
 
